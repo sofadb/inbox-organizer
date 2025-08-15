@@ -77,7 +77,7 @@ This project uses a modern CI/CD approach with multiple workflows:
 ### File Organization Pattern
 
 - **Input**: Files in `/inbox` with pattern `YYYYMMDDHHMMSS.md`
-- **Output**: Files moved to `/journal/YYYY-MM-DD/YYYYMMDDHHMMSS.md`
+- **Output**: Files moved to `/journal/YYYY/MM/DD/YYYYMMDDHHMMSS.md`
 
 **Example:**
 ```
@@ -85,7 +85,7 @@ Before:
 /inbox/20241225143000.md
 
 After:
-/journal/2024-12-25/20241225143000.md
+/journal/2024/12/25/20241225143000.md
 ```
 
 ### Default Schedule

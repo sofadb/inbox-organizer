@@ -29,8 +29,8 @@ def organize_files():
         if match:
             year, month, day, hour, minute, second = match.groups()
             
-            # Create target directory structure: /journal/YYYY-MM-DD/
-            target_dir = journal_dir / f"{year}-{month}-{day}"
+            # Create target directory structure: /journal/YYYY/MM/DD/
+            target_dir = journal_dir / year / month / day
             target_dir.mkdir(parents=True, exist_ok=True)
             
             # Target file path
