@@ -1,6 +1,6 @@
 # Journal File Organizer
 
-A reusable GitHub workflow that organizes timestamped markdown files from `/inbox` into structured `/journal` directories. The workflow is published as a Docker image to GitHub Container Registry (GHCR) for better security and performance.
+A reusable GitHub workflow that organizes timestamped markdown files from an inbox repository into structured `/journal` directories. Supports a 3-repository architecture: `sofadb/inbox` (this repo), `user/inbox` (markdown files), and `user/journal` (organized files).
 
 ## Setup Instructions
 
@@ -12,12 +12,12 @@ A reusable GitHub workflow that organizes timestamped markdown files from `/inbo
 2. The Docker image is automatically built and published to GHCR
 3. Configure secrets (see step 2 below)
 
-### Option B: Use the Reusable Workflow
+### Option B: Use the Reusable Workflow in Your Journal Repository
 
-Create a workflow in your private repository that calls this reusable workflow:
+Create a workflow in your journal repository that calls this reusable workflow:
 
 ```yaml
-# .github/workflows/organize-journal.yml in your private repo
+# .github/workflows/organize-journal.yml in your journal repo
 name: Organize Journal Files
 
 on:
@@ -32,25 +32,33 @@ jobs:
   organize:
     uses: sofadb/inbox/.github/workflows/organize.yml@main
     with:
+      inbox_repo: 'username/inbox'  # Your inbox repository
+      inbox_path: '/inbox'          # Path to inbox files (/ or /inbox)
       image_tag: 'latest'
+    secrets:
+      inbox_token: ${{ secrets.INBOX_ACCESS_TOKEN }}
 ```
 
-This calls the reusable workflow from `sofadb/inbox`.
+This workflow will:
+1. Clone your inbox repository
+2. Copy .md files from the inbox to your journal
+3. Organize them into date-based directories
+4. Clean the processed files from your inbox repository
+5. Commit the organized files to your journal repository
 
 ### 2. Configure Secrets
 
-**For Option A (Fork this repo):**
+**For Option B (Reusable workflow):**
 
-Create these secrets in your forked repository:
+Create these secrets in your journal repository:
 
 1. Go to **Settings** → **Secrets and variables** → **Actions**
 2. Add secrets:
-   - `PRIVATE_REPO`: Your private repository name (format: `username/repo-name`)  
-   - `PRIVATE_REPO_TOKEN`: Personal Access Token with `repo` scope
+   - `INBOX_ACCESS_TOKEN`: Personal Access Token with `repo` scope to access and modify your inbox repository
 
-**For Option B (Reusable workflow):**
+**Repository Permissions:**
 
-Ensure your private repo has Actions enabled with write permissions:
+Ensure your journal repo has Actions enabled with write permissions:
 1. **Settings** → **Actions** → **General** → **Workflow permissions**
 2. Select **Read and write permissions**
 
@@ -61,34 +69,45 @@ Ensure your private repo has Actions enabled with write permissions:
 
 ## Architecture
 
-This project uses a modern CI/CD approach with multiple workflows:
+This project uses a 3-repository architecture:
 
-### 1. `build-image.yml` - Docker Image Builder
+### Repository Structure
+- **`sofadb/inbox`** (this repo): Contains the reusable workflow and Docker image
+- **`user/inbox`**: Contains your markdown files (configurable path: `/` or `/inbox`)
+- **`user/journal`**: Contains your organized journal files in date-based directories
+
+### Workflows
+
+#### 1. `build-image.yml` - Docker Image Builder
 - Builds and publishes Docker image to GHCR
 - Triggers on changes to `Dockerfile` or `organize_files.py`
 - Multi-platform builds (AMD64/ARM64)
 - Semantic versioning support
 
-### 2. `organize.yml` - Reusable Workflow
-- The main workflow that does the file organization
-- Can be called from any repository
-- Uses the pre-built Docker image from GHCR
-- Configurable via inputs and secrets
+#### 2. `organize.yml` - Reusable Workflow
+- Clones your inbox repository
+- Copies .md files to the journal repository
+- Organizes files into date-based directories
+- Cleans processed files from the inbox repository
+- Commits organized files to the journal repository
 
 ## How It Works
 
 ### File Organization Pattern
 
-- **Input**: Files in `/inbox` with pattern `YYYYMMDDHHMMSS.md`
-- **Output**: Files moved to `/journal/YYYY/MM/DD/YYYYMMDDHHMMSS.md`
+- **Input**: Files in your inbox repository (configurable path: `/` or `/inbox`) with pattern `YYYYMMDDHHMMSS.md`
+- **Output**: Files organized in your journal repository to `/journal/YYYY/MM/DD/YYYYMMDDHHMMSS.md`
 
-**Example:**
+**Example Flow:**
 ```
-Before:
-/inbox/20241225143000.md
+1. Inbox Repository (user/inbox):
+   /inbox/20241225143000.md
 
-After:
-/journal/2024/12/25/20241225143000.md
+2. Journal Repository (user/journal):
+   /journal/2024/12/25/20241225143000.md
+
+3. Inbox Repository (after processing):
+   /inbox/ (file removed)
 ```
 
 ### Default Schedule

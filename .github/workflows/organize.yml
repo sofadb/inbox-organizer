@@ -3,6 +3,15 @@ name: Organize Journal Files (Reusable)
 on:
   workflow_call:
     inputs:
+      inbox_repo:
+        description: 'Inbox repository to clone (e.g., user/inbox)'
+        required: true
+        type: string
+      inbox_path:
+        description: 'Path to inbox files within the repo (/ or /inbox)'
+        required: false
+        type: string
+        default: '/inbox'
       image_tag:
         description: 'Docker image tag to use'
         required: false
@@ -18,6 +27,10 @@ on:
         required: false
         type: string
         default: 'GitHub Action - Journal Organizer'
+    secrets:
+      inbox_token:
+        description: 'Token to access and clean the inbox repo'
+        required: true
 
 jobs:
   organize-files:
@@ -28,16 +41,56 @@ jobs:
     steps:
     - name: Checkout journal repo
       uses: actions/checkout@v4
+      with:
+        token: ${{ github.token }}
+        path: journal
     
+    - name: Checkout inbox repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.inbox_repo }}
+        token: ${{ secrets.inbox_token }}
+        path: inbox
+    
+    - name: Copy inbox files to journal structure
+      run: |
+        mkdir -p journal/inbox
+        if [ "${{ inputs.inbox_path }}" = "/" ]; then
+          cp inbox/*.md journal/inbox/ 2>/dev/null || echo "No .md files found in root"
+        else
+          cp inbox${{ inputs.inbox_path }}/*.md journal/inbox/ 2>/dev/null || echo "No .md files found in ${{ inputs.inbox_path }}"
+        fi
     
     - name: Run file organization
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}:/data \
+          -v ${{ github.workspace }}/journal:/data \
           ghcr.io/sofadb/inbox/journal-organizer:${{ inputs.image_tag }}
     
-    - name: Commit and push changes
+    - name: Clean inbox repo
       run: |
+        cd inbox
+        git config --local user.email "${{ inputs.commit_email }}"
+        git config --local user.name "${{ inputs.commit_user }}"
+        
+        # Remove processed files from inbox directory only
+        if [ "${{ inputs.inbox_path }}" = "/" ]; then
+          rm -f *.md
+        else
+          rm -f .${{ inputs.inbox_path }}/*.md
+        fi
+        
+        git add .
+        if git diff --staged --quiet; then
+          echo "No files to clean from inbox"
+        else
+          git commit -m "🧹 Clean processed journal files - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
+        fi
+    
+    - name: Commit and push journal changes
+      run: |
+        cd journal
         git config --local user.email "${{ inputs.commit_email }}"
         git config --local user.name "${{ inputs.commit_user }}"
         git add .
@@ -46,4 +99,3 @@ jobs:
         else
           git commit -m "📁 Organize journal files - $(date '+%Y-%m-%d %H:%M:%S')"
           git push
-        fi
