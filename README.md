@@ -29,10 +29,7 @@ jobs:
   organize:
     uses: sofadb/inbox/.github/workflows/organize.yml@main
     with:
-      private_repo: ${{ github.repository }}
       image_tag: 'latest'
-    secrets:
-      private_repo_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 This calls the reusable workflow from `sofadb/inbox`.
@@ -50,11 +47,9 @@ Create these secrets in your forked repository:
 
 **For Option B (Reusable workflow):**
 
-If using `${{ secrets.GITHUB_TOKEN }}`, ensure your private repo has Actions enabled with write permissions:
+Ensure your private repo has Actions enabled with write permissions:
 1. **Settings** → **Actions** → **General** → **Workflow permissions**
 2. Select **Read and write permissions**
-
-For cross-repository access, use a Personal Access Token instead.
 
 ### 3. Enable GitHub Actions
 
