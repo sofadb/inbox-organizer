@@ -160,7 +160,7 @@ echo "# Test content" > test-repo/inbox/20241225143000.md
 docker run --rm -v $(pwd)/test-repo:/data file-organizer
 
 # Check results
-ls test-repo/journal/2024-12-25/
+ls test-repo/journal/2024/12/25/
 ```
 
 ## Troubleshooting
