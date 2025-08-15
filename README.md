@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   organize:
-    uses: sofadb/inbox/.github/workflows/organize.yml@main
+    uses: sofadb/inbox-organizer/.github/workflows/organize.yml@main
     with:
       inbox_repo: 'username/inbox'  # Your inbox repository
       inbox_path: '/inbox'          # Path to inbox files (/ or /inbox)
