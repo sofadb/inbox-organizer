@@ -54,12 +54,34 @@ jobs:
     
     - name: Copy inbox files to journal structure
       run: |
+        echo "=== DEBUG: Setting up directories ==="
         mkdir -p journal/inbox
+        
+        echo "=== DEBUG: Listing workspace contents ==="
+        ls -la ${{ github.workspace }}
+        
+        echo "=== DEBUG: Checking inbox repo contents ==="
+        ls -la inbox/
+        
+        echo "=== DEBUG: Inbox path configuration ==="
+        echo "inbox_path input: '${{ inputs.inbox_path }}'"
+        
         if [ "${{ inputs.inbox_path }}" = "/" ]; then
+          echo "=== DEBUG: Copying from root directory ==="
+          echo "Files to copy:"
+          ls -la inbox/*.md 2>/dev/null || echo "No .md files found in root"
           cp inbox/*.md journal/inbox/ 2>/dev/null || echo "No .md files found in root"
         else
+          echo "=== DEBUG: Copying from subdirectory: inbox${{ inputs.inbox_path }} ==="
+          echo "Directory contents:"
+          ls -la inbox${{ inputs.inbox_path }}/ 2>/dev/null || echo "Directory does not exist"
+          echo "Files to copy:"
+          ls -la inbox${{ inputs.inbox_path }}/*.md 2>/dev/null || echo "No .md files found in ${{ inputs.inbox_path }}"
           cp inbox${{ inputs.inbox_path }}/*.md journal/inbox/ 2>/dev/null || echo "No .md files found in ${{ inputs.inbox_path }}"
         fi
+        
+        echo "=== DEBUG: Files copied to journal/inbox ==="
+        ls -la journal/inbox/
     
     - name: Run file organization
       run: |
