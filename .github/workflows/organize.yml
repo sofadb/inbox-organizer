@@ -22,7 +22,7 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/data \
-          ghcr.io/${{ github.repository_owner }}/journal-organizer-workflow/journal-organizer:${{ inputs.image_tag }}
+          ghcr.io/sofadb/inbox/journal-organizer:${{ inputs.image_tag }}
     
     - name: Commit and push changes
       run: |
