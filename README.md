@@ -25,6 +25,9 @@ on:
     - cron: '0 2 * * *'  # Daily at 2 AM UTC
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   organize:
     uses: sofadb/inbox/.github/workflows/organize.yml@main
