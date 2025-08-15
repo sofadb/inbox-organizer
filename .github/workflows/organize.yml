@@ -8,6 +8,16 @@ on:
         required: false
         type: string
         default: 'latest'
+      commit_email:
+        description: 'Email for git commits'
+        required: false
+        type: string
+        default: 'action@github.com'
+      commit_user:
+        description: 'Name for git commits'
+        required: false
+        type: string
+        default: 'GitHub Action - Journal Organizer'
 
 jobs:
   organize-files:
@@ -26,8 +36,8 @@ jobs:
     
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action - Journal Organizer"
+        git config --local user.email "${{ inputs.commit_email }}"
+        git config --local user.name "${{ inputs.commit_user }}"
         git add .
         if git diff --staged --quiet; then
           echo "No changes to commit"
