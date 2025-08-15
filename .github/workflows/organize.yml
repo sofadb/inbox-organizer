@@ -99,3 +99,4 @@ jobs:
         else
           git commit -m "📁 Organize journal files - $(date '+%Y-%m-%d %H:%M:%S')"
           git push
+        fi
